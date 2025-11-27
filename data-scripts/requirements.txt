@@ -1,0 +1,5 @@
+# Python数据处理脚本依赖包
+pandas==2.1.4
+mysql-connector-python==8.2.0
+numpy==1.26.2
+openpyxl==3.1.2
