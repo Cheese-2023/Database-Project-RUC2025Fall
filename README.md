@@ -1,6 +1,6 @@
 # 县域风险预警系统 (County Risk Warning System)
 
-本项目是一个县域风险监测与预警系统，旨在通过多维度数据分析（经济、社会、环境、治理等），对县域发展风险进行实时监测、评估和预警。
+数据库系统大作业 2025Fall
 
 ## 1. 环境准备 (Prerequisites)
 
@@ -32,8 +32,9 @@ mysql -u root -p county_risk_warning_system < database/schema.sql
 ```
 
 ### 2.3 生成与导入数据
+由于数据文件过大，故需要在群里下载并放置在data文件夹下；
 
-由于真实数据可能不足，本项目提供了一套 Python 脚本来生成模拟数据以供测试。
+由于真实数据不足，提供了一套 Python 脚本来生成模拟数据以供测试。
 
 1.  **安装 Python 依赖**：
     进入 `data-scripts` 目录并安装依赖：
@@ -57,8 +58,6 @@ mysql -u root -p county_risk_warning_system < database/schema.sql
     ```
 
 3.  **运行数据生成脚本**：
-    本项目提供了两个一键导入脚本，请根据需求选择其一：
-
     *   **导入全量历史数据**
         导入 2000-2023 年的所有数据，包含真实数据和模拟补全数据。仅导入数据，不自动触发计算。
         ```bash
