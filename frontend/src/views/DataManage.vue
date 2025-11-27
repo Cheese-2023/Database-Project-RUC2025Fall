@@ -155,7 +155,7 @@ const handleUpdateIndicator = async (row: any) => {
 const handleRecalculate = async () => {
   calculating.value = true
   try {
-    await calculateRisk(2023)
+    await calculateRisk()
     ElMessage.success('风险重新计算已触发')
   } catch (error) {
     ElMessage.error('触发计算失败')

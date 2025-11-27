@@ -13,7 +13,7 @@
             <el-menu-item index="risk-analysis">风险分析</el-menu-item>
             <el-menu-item index="alert-manage">预警管理</el-menu-item>
             <el-menu-item index="data-manage">数据管理</el-menu-item>
-            <el-menu-item index="system">系统管理</el-menu-item>
+
           </el-menu>
         </div>
       </el-header>

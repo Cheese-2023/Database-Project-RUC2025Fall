@@ -30,12 +30,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/DataManage.vue'),
     meta: { title: '数据管理' }
   },
-  {
-    path: '/system',
-    name: 'System',
-    component: () => import('@/views/System.vue'),
-    meta: { title: '系统管理' }
-  }
+
 ]
 
 const router = createRouter({

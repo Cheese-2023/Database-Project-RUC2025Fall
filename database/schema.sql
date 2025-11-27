@@ -313,6 +313,8 @@ CREATE TABLE risk_indicators (
     threshold_high DECIMAL(8,4) COMMENT '高风险阈值',
     threshold_medium DECIMAL(8,4) COMMENT '中风险阈值',
     threshold_low DECIMAL(8,4) COMMENT '低风险阈值',
+    unit VARCHAR(20) COMMENT '单位',
+    comparison_operator ENUM('GT', 'LT') DEFAULT 'LT' COMMENT '比较操作符: GT(大于阈值风险高), LT(小于阈值风险高)',
     status ENUM('启用', '停用') DEFAULT '启用',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -530,19 +532,19 @@ INSERT INTO users (username, password_hash, role, real_name, email, department) 
 ('viewer1', SHA2('viewer123', 256), 'VIEWER', '普通用户', 'viewer1@example.com', '综合办公室');
 
 -- 插入基础风险指标
-INSERT INTO risk_indicators (indicator_code, indicator_name, category, subcategory, weight, threshold_high, threshold_medium, threshold_low, calculation_method) VALUES
-('GDP_GROWTH', 'GDP增长率', '经济风险', '经济增长', 0.15, 0.8, 0.6, 0.4, 'GDP年增长率低于阈值则风险增加'),
-('GDP_PER_CAPITA', '人均GDP水平', '经济风险', '发展水平', 0.10, 0.7, 0.5, 0.3, '人均GDP相对全国平均水平'),
-('FISCAL_SELF_SUFFICIENCY', '财政自给率', '经济风险', '财政状况', 0.12, 0.8, 0.6, 0.4, '地方财政收入/支出比例'),
-('DEBT_RATIO', '政府债务率', '经济风险', '债务风险', 0.10, 0.9, 0.7, 0.5, '债务余额/财政收入比例'),
-('POPULATION_DECLINE', '人口流失率', '社会风险', '人口变化', 0.08, 0.8, 0.6, 0.4, '年度人口净流出率'),
-('EMPLOYMENT_RATE', '就业率', '社会风险', '就业状况', 0.10, 0.8, 0.6, 0.4, '就业人口/劳动年龄人口'),
-('INCOME_GAP', '城乡收入差距', '社会风险', '收入分配', 0.06, 0.7, 0.5, 0.3, '城镇居民收入/农村居民收入'),
-('AIR_QUALITY', '空气质量', '环境风险', '大气污染', 0.08, 0.8, 0.6, 0.4, '基于PM2.5、PM10等综合评价'),
-('EMISSION_INTENSITY', '污染排放强度', '环境风险', '污染控制', 0.07, 0.9, 0.7, 0.5, '污染物排放量/GDP比值'),
-('EDUCATION_INVESTMENT', '教育投入', '治理风险', '公共服务', 0.05, 0.6, 0.4, 0.2, '教育支出/财政支出比例'),
-('HEALTH_INVESTMENT', '医疗投入', '治理风险', '公共服务', 0.05, 0.6, 0.4, 0.2, '医疗卫生支出/财政支出比例'),
-('INNOVATION_CAPACITY', '创新能力', '发展风险', '创新发展', 0.04, 0.7, 0.5, 0.3, '高新技术企业数量、专利数量等综合评价');
+INSERT INTO risk_indicators (indicator_code, indicator_name, category, subcategory, weight, threshold_high, threshold_medium, threshold_low, calculation_method, unit, comparison_operator) VALUES
+('GDP_GROWTH', 'GDP增长率', '经济风险', '经济增长', 0.15, 0.8, 0.6, 0.4, 'GDP年增长率低于阈值则风险增加', '%', 'LT'),
+('GDP_PER_CAPITA', '人均GDP水平', '经济风险', '发展水平', 0.10, 0.7, 0.5, 0.3, '人均GDP相对全国平均水平', '万元', 'LT'),
+('FISCAL_SELF_SUFFICIENCY', '财政自给率', '经济风险', '财政状况', 0.12, 0.8, 0.6, 0.4, '地方财政收入/支出比例', '%', 'LT'),
+('DEBT_RATIO', '政府债务率', '经济风险', '债务风险', 0.10, 0.9, 0.7, 0.5, '债务余额/财政收入比例', '%', 'GT'),
+('POPULATION_DECLINE', '人口流失率', '社会风险', '人口变化', 0.08, 0.8, 0.6, 0.4, '年度人口净流出率', '%', 'GT'),
+('EMPLOYMENT_RATE', '就业率', '社会风险', '就业状况', 0.10, 0.8, 0.6, 0.4, '就业人口/劳动年龄人口', '%', 'LT'),
+('INCOME_GAP', '城乡收入差距', '社会风险', '收入分配', 0.06, 0.7, 0.5, 0.3, '城镇居民收入/农村居民收入', '倍', 'GT'),
+('AIR_QUALITY', '空气质量', '环境风险', '大气污染', 0.08, 0.8, 0.6, 0.4, '基于PM2.5、PM10等综合评价', '指数', 'GT'),
+('EMISSION_INTENSITY', '污染排放强度', '环境风险', '污染控制', 0.07, 0.9, 0.7, 0.5, '污染物排放量/GDP比值', '吨/万元', 'GT'),
+('EDUCATION_INVESTMENT', '教育投入', '治理风险', '公共服务', 0.05, 0.6, 0.4, 0.2, '教育支出/财政支出比例', '%', 'LT'),
+('HEALTH_INVESTMENT', '医疗投入', '治理风险', '公共服务', 0.05, 0.6, 0.4, 0.2, '医疗卫生支出/财政支出比例', '%', 'LT'),
+('INNOVATION_CAPACITY', '创新能力', '发展风险', '创新发展', 0.04, 0.7, 0.5, 0.3, '高新技术企业数量、专利数量等综合评价', '指数', 'LT');
 
 -- 插入预警规则
 INSERT INTO alert_rules (rule_name, rule_category, rule_expression, threshold_high, threshold_medium, threshold_low, description, created_by) VALUES
