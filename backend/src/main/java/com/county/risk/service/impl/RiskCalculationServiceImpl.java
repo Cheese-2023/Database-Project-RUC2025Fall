@@ -80,24 +80,75 @@ public class RiskCalculationServiceImpl implements RiskCalculationService {
             log.info("检测到数据年份范围: {} - {}", minYear, maxYear);
         }
         
-        int totalYears = maxYear - minYear + 1;
+        // 获取需要计算的年份列表（有基础数据但缺少风险评估的年份）
+        List<Integer> yearsToCalculate = getYearsNeedingCalculation(minYear, maxYear);
+        
+        if (yearsToCalculate.isEmpty()) {
+            log.info("所有年份的风险评估已完成，无需重新计算");
+            return;
+        }
+        
+        log.info("需要计算的年份: {} (共{}年)", yearsToCalculate, yearsToCalculate.size());
+        
+        int totalYears = yearsToCalculate.size();
         int successYears = 0;
         int failedYears = 0;
         
-        for (int year = minYear; year <= maxYear; year++) {
+        for (Integer year : yearsToCalculate) {
             try {
-                log.info("正在计算第 {}/{} 年: {}", (year - minYear + 1), totalYears, year);
+                log.info("正在计算第 {}/{} 年: {}", (successYears + failedYears + 1), totalYears, year);
                 calculateAll(year);
                 successYears++;
                 log.info("✓ {} 年计算完成", year);
             } catch (Exception e) {
                 failedYears++;
-                log.error("✗ {} 年计算失败: {}", year, e.getMessage());
+                log.error("✗ {} 年计算失败: {}", year, e.getMessage(), e);
                 // 继续计算下一年，不中断
             }
         }
         
         log.info("所有年份风险计算完成: 成功 {}/{}, 失败 {}", successYears, totalYears, failedYears);
+    }
+
+    /**
+     * 获取需要计算的年份列表（有基础数据但缺少风险评估的年份）
+     */
+    private List<Integer> getYearsNeedingCalculation(Integer minYear, Integer maxYear) {
+        List<Integer> yearsToCalculate = new java.util.ArrayList<>();
+        
+        try {
+            // 获取所有有基础数据的年份
+            List<Integer> yearsWithData = riskAssessmentMapper.getYearsWithData();
+            
+            // 获取所有已有风险评估的年份
+            List<Integer> yearsWithAssessment = riskAssessmentMapper.getYearsWithAssessment();
+            
+            // 找出有数据但没有评估的年份
+            for (Integer year : yearsWithData) {
+                if (year >= minYear && year <= maxYear && !yearsWithAssessment.contains(year)) {
+                    yearsToCalculate.add(year);
+                }
+            }
+            
+            // 如果所有年份都有评估，则重新计算所有年份（用于阈值更新后的重新计算）
+            if (yearsToCalculate.isEmpty()) {
+                log.info("所有年份已有风险评估，将重新计算所有年份以应用新的阈值");
+                for (int year = minYear; year <= maxYear; year++) {
+                    if (yearsWithData.contains(year)) {
+                        yearsToCalculate.add(year);
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            log.warn("获取需要计算的年份失败，将计算所有年份: {}", e.getMessage());
+            // 如果查询失败，则计算所有年份
+            for (int year = minYear; year <= maxYear; year++) {
+                yearsToCalculate.add(year);
+            }
+        }
+        
+        return yearsToCalculate;
     }
 
     /**

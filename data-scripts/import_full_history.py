@@ -8,10 +8,17 @@
 2. 包含真实数据导入 (从Excel)
 3. 自动补全缺失年份的数据 (2000-2023)
 4. 数据生成包含随机波动，便于前端展示趋势
-5. 仅执行数据写入，不触发后端计算
+5. 支持数据扰动功能，可手动控制扰动大小
+6. 仅执行数据写入，不触发后端计算
 
 使用方法：
 python3 import_full_history.py
+
+数据扰动配置：
+- 在脚本开头修改 DATA_PERTURBATION_RATE 参数
+- 范围：0.0 (无扰动) 到 1.0 (最大扰动)
+- 建议值：0.05 (5%) 到 0.20 (20%)
+- 默认值：0.10 (10%)
 """
 
 import pandas as pd
@@ -27,10 +34,36 @@ import time
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'yourpassword',
+    'password': '123456',
     'database': 'county_risk_warning_system',
     'charset': 'utf8mb4'
 }
+
+# ==========================================
+# 数据扰动配置
+# ==========================================
+# 扰动强度：0.0-1.0，0.0表示无扰动，1.0表示最大扰动
+# 建议值：0.05 (5%扰动) 到 0.20 (20%扰动)
+DATA_PERTURBATION_RATE = 0.30  # 默认10%扰动，可根据需要修改
+
+def apply_perturbation(value, rnd, perturbation_rate=DATA_PERTURBATION_RATE):
+    """
+    对数值应用扰动
+    
+    Args:
+        value: 原始数值
+        rnd: 随机数生成器
+        perturbation_rate: 扰动强度 (0.0-1.0)
+    
+    Returns:
+        扰动后的数值
+    """
+    if value == 0 or perturbation_rate == 0:
+        return value
+    
+    # 生成 -perturbation_rate 到 +perturbation_rate 之间的随机扰动
+    perturbation = rnd.uniform(-perturbation_rate, perturbation_rate)
+    return value * (1 + perturbation)
 
 def connect_db():
     try:
@@ -139,6 +172,9 @@ def process_year_data(cursor, df, year, all_counties):
         if row and pd.notna(row.get('年末总人口_万人')):
             total_pop = float(row['年末总人口_万人'])
             rural_pop = float(row.get('乡村人口_万人', 0))
+            # 应用扰动
+            total_pop = apply_perturbation(total_pop, rnd)
+            rural_pop = apply_perturbation(rural_pop, rnd)
         else:
             # 模拟人口: 基准 40万人 * 规模 * 微弱增长
             total_pop = 40.0 * county_scale * (1.01 ** (year - 2010)) * rnd.uniform(0.95, 1.05)
@@ -161,6 +197,9 @@ def process_year_data(cursor, df, year, all_counties):
         if row and pd.notna(row.get('地区生产总值_万元')):
             gdp = float(row['地区生产总值_万元'])
             gdp_per_capita = float(row.get('人均地区生产总值_元/人', 0))
+            # 应用扰动
+            gdp = apply_perturbation(gdp, rnd)
+            gdp_per_capita = apply_perturbation(gdp_per_capita, rnd)
         else:
             # 模拟GDP: 基准 200亿 * 因子 * 额外随机噪音
             gdp = 2000000 * county_scale * factor * rnd.uniform(0.8, 1.2)
@@ -170,6 +209,13 @@ def process_year_data(cursor, df, year, all_counties):
         p1 = rnd.uniform(2, 30)
         p2 = rnd.uniform(20, 60)
         p3 = 100 - p1 - p2
+        
+        # 计算GDP增长率（如果有上一年数据）
+        gdp_growth_rate = None
+        if year > 2000:
+            # 尝试获取上一年的GDP来计算增长率
+            # 这里简化处理，使用随机增长率
+            gdp_growth_rate = rnd.uniform(-5.0, 15.0)  # -5% 到 15% 的增长率
         
         eco_data.append((
             county_code, year,
@@ -181,6 +227,7 @@ def process_year_data(cursor, df, year, all_counties):
             round(gdp * p1 / 100, 2),
             round(gdp * p1 / 100 * 0.4, 2),
             round(gdp_per_capita, 2),
+            round(gdp_growth_rate, 2) if gdp_growth_rate else None,
             round(p1, 2), round(p2, 2), round(p3, 2)
         ))
 
@@ -190,6 +237,9 @@ def process_year_data(cursor, df, year, all_counties):
         if row and pd.notna(row.get('地方财政一般预算收入_万元')):
             revenue = float(row['地方财政一般预算收入_万元'])
             expenditure = float(row.get('地方财政一般预算支出_万元', revenue * 1.5))
+            # 应用扰动
+            revenue = apply_perturbation(revenue, rnd)
+            expenditure = apply_perturbation(expenditure, rnd)
         else:
             # 财政收入通常占GDP的 3-15% (差异化)
             revenue = gdp * rnd.uniform(0.03, 0.15)
@@ -280,10 +330,10 @@ def process_year_data(cursor, df, year, all_counties):
             INSERT INTO economic_aggregate 
             (county_code, year, gdp_万元, primary_industry_万元, secondary_industry_万元,
              industrial_value_万元, tertiary_industry_万元, agriculture_value_万元,
-             livestock_value_万元, gdp_per_capita, industry_structure_1, 
+             livestock_value_万元, gdp_per_capita, gdp_growth_rate, industry_structure_1, 
              industry_structure_2, industry_structure_3)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE gdp_万元=VALUES(gdp_万元)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE gdp_万元=VALUES(gdp_万元), gdp_growth_rate=VALUES(gdp_growth_rate)
         """, eco_data)
         
         # Fiscal
@@ -347,6 +397,9 @@ def main():
     print("="*60)
     print("全量历史数据导入 (2000-2023)")
     print("="*60)
+    print(f"数据扰动强度: {DATA_PERTURBATION_RATE * 100:.1f}%")
+    print("提示: 可在脚本开头修改 DATA_PERTURBATION_RATE 参数调整扰动大小")
+    print("="*60)
     
     start_time = time.time()
     
@@ -365,7 +418,7 @@ def main():
 
         # 1. 读取Excel并导入基础信息
         print(f"\n[1] 读取Excel文件: {excel_file}")
-        df = pd.read_excel(excel_file, engine='openpyxl')
+        df = pd.read_excel(excel_file, engine='openpyxl', sheet_name='ARIMA填补(慎用)')
         df = df.fillna(0)
         
         # 导入基础信息 (必须第一步)

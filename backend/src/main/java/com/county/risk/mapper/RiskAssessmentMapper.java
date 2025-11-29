@@ -127,4 +127,16 @@ public interface RiskAssessmentMapper extends BaseMapper<ComprehensiveRiskAssess
          */
         @Select("SELECT MAX(year) FROM economic_aggregate")
         Integer getMaxDataYear();
+
+        /**
+         * 获取所有有基础数据的年份
+         */
+        @Select("SELECT DISTINCT year FROM economic_aggregate ORDER BY year")
+        List<Integer> getYearsWithData();
+
+        /**
+         * 获取所有已有风险评估的年份
+         */
+        @Select("SELECT DISTINCT year FROM comprehensive_risk_assessment ORDER BY year")
+        List<Integer> getYearsWithAssessment();
 }
