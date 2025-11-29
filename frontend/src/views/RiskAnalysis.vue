@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { onBeforeUnmount, onMounted, onActivated, reactive, ref } from 'vue'
 import * as echarts from 'echarts'
 import { getRiskStatistics, getRiskList, getRiskTrend } from '@/api/risk'
 import { countyApi } from '@/api/county'
@@ -347,10 +347,25 @@ const refreshYearOptions = (list: any[]) => {
   }
 }
 
+const isDataLoaded = ref(false) // 标记数据是否已加载
+
 onMounted(() => {
-  loadStatistics()
-  loadProvinces()
-  loadRiskList()
+  if (!isDataLoaded.value) {
+    loadStatistics()
+    loadProvinces()
+    loadRiskList()
+    isDataLoaded.value = true
+  }
+})
+
+// 当组件被激活时（从其他页面返回），如果数据未加载则加载
+onActivated(() => {
+  if (!isDataLoaded.value) {
+    loadStatistics()
+    loadProvinces()
+    loadRiskList()
+    isDataLoaded.value = true
+  }
 })
 
 onBeforeUnmount(() => {

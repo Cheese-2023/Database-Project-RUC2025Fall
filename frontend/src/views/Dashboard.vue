@@ -1,25 +1,7 @@
 <template>
   <div class="dashboard-container">
-    <el-container>
-      <!-- 顶部导航栏 -->
-      <el-header class="dashboard-header">
-        <div class="header-title">
-          <h1>县域风险预警与可视化决策系统</h1>
-          <p class="subtitle">County Risk Warning and Visualization Decision System</p>
-        </div>
-        <div class="header-nav">
-          <el-menu mode="horizontal" :default-active="activeMenu" @select="handleMenuSelect">
-            <el-menu-item index="dashboard">风险监控大屏</el-menu-item>
-            <el-menu-item index="risk-analysis">风险分析</el-menu-item>
-            <el-menu-item index="alert-manage">预警管理</el-menu-item>
-            <el-menu-item index="data-manage">数据管理</el-menu-item>
-
-          </el-menu>
-        </div>
-      </el-header>
-      
-      <!-- 主内容区 -->
-      <el-main class="dashboard-main" v-loading="loading" element-loading-text="加载中...">
+    <!-- 主内容区 -->
+    <div class="dashboard-main" v-loading="loading" element-loading-text="加载中...">
         <!-- 关键指标卡片 -->
         <el-row :gutter="20" class="stats-row">
           <el-col :span="6">
@@ -132,21 +114,18 @@
             </el-card>
           </el-col>
         </el-row>
-      </el-main>
-    </el-container>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onActivated } from 'vue'
 import * as echarts from 'echarts'
 import { getRiskStatistics, getAverageRiskTrend, getTopRiskCounties } from '../api/risk'
 import { ElMessage } from 'element-plus'
 
-const router = useRouter()
-const activeMenu = ref('dashboard')
 const loading = ref(true)
+const isDataLoaded = ref(false) // 标记数据是否已加载
 
 const stats = ref({
   totalCounties: 0,
@@ -157,9 +136,6 @@ const stats = ref({
 
 const alertList = ref<any[]>([])
 
-const handleMenuSelect = (index: string) => {
-  router.push(`/${index}`)
-}
 
 const getRiskLevelType = (level: string) => {
   switch (level) {
@@ -347,10 +323,35 @@ const formatYear = (value: string | number) => {
 }
 
 onMounted(async () => {
+  // 如果数据已加载（通过 keep-alive 缓存），则不再重新加载
+  if (isDataLoaded.value) {
+    return
+  }
+  
   loading.value = true
-  await loadStatistics()
-  await loadTopRiskCounties()
-  await initCharts()
+  try {
+    await loadStatistics()
+    await loadTopRiskCounties()
+    await initCharts()
+    isDataLoaded.value = true
+  } finally {
+    loading.value = false
+  }
+})
+
+// 当组件被激活时（从其他页面返回），如果数据未加载则加载
+onActivated(async () => {
+  if (!isDataLoaded.value && !loading.value) {
+    loading.value = true
+    try {
+      await loadStatistics()
+      await loadTopRiskCounties()
+      await initCharts()
+      isDataLoaded.value = true
+    } finally {
+      loading.value = false
+    }
+  }
 })
 </script>
 

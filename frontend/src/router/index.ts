@@ -38,4 +38,10 @@ const router = createRouter({
   routes
 })
 
+// 路由守卫：防止重复加载数据
+router.beforeEach((to, from, next) => {
+  // 允许导航
+  next()
+})
+
 export default router

@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, onActivated, reactive } from 'vue'
 import { getAlerts, confirmAlert, checkAlerts } from '../api/alert'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
@@ -181,10 +181,24 @@ const handleCheck = async () => {
   }
 }
 
+const isDataLoaded = ref(false) // 标记数据是否已加载
+
 onMounted(() => {
-  loadAlerts()
-  // 自动触发一次检查
-  handleCheck()
+  if (!isDataLoaded.value) {
+    loadAlerts()
+    // 自动触发一次检查
+    handleCheck()
+    isDataLoaded.value = true
+  }
+})
+
+// 当组件被激活时（从其他页面返回），如果数据未加载则加载
+onActivated(() => {
+  if (!isDataLoaded.value) {
+    loadAlerts()
+    handleCheck()
+    isDataLoaded.value = true
+  }
 })
 </script>
 
