@@ -115,4 +115,16 @@ public interface RiskAssessmentMapper extends BaseMapper<ComprehensiveRiskAssess
 
         @Select("SELECT COUNT(DISTINCT county_code) FROM comprehensive_risk_assessment")
         Long countDistinctCounties();
+
+        /**
+         * 获取数据表中的最小年份
+         */
+        @Select("SELECT MIN(year) FROM economic_aggregate")
+        Integer getMinDataYear();
+
+        /**
+         * 获取数据表中的最大年份
+         */
+        @Select("SELECT MAX(year) FROM economic_aggregate")
+        Integer getMaxDataYear();
 }

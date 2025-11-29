@@ -42,27 +42,89 @@ public class RiskCalculationServiceImpl implements RiskCalculationService {
         log.info("开始计算 {} 年所有县域风险...", year);
         List<CountyBasic> counties = countyBasicMapper.selectList(null);
         int successCount = 0;
+        int failCount = 0;
+        
         for (CountyBasic county : counties) {
             try {
                 calculateCounty(county.getCountyCode(), year);
                 successCount++;
+                
+                // 每100个县域输出一次进度
+                if (successCount % 100 == 0) {
+                    log.info("{} 年计算进度: {}/{}", year, successCount, counties.size());
+                }
             } catch (Exception e) {
-                log.error("计算县域风险失败: county={}, year={}, error={}", county.getCountyCode(), year, e.getMessage());
-                // 继续计算下一个
+                failCount++;
+                log.error("计算县域风险失败: county={}, year={}, error={}", 
+                    county.getCountyCode(), year, e.getMessage());
+                // 继续计算下一个，不中断
             }
         }
-        log.info("计算完成 {} 年: 成功 {}/{}", year, successCount, counties.size());
+        log.info("计算完成 {} 年: 成功 {}/{}, 失败 {}", year, successCount, counties.size(), failCount);
     }
 
     @Override
     // @Transactional(rollbackFor = Exception.class) // 移除大事务
     public void calculateAllYears() {
         log.info("开始计算所有年份风险...");
-        // 假设数据范围从2000年到2023年
-        for (int year = 2000; year <= 2023; year++) {
-            calculateAll(year);
+        
+        // 动态获取年份范围
+        Integer minYear = getMinYearFromData();
+        Integer maxYear = getMaxYearFromData();
+        
+        if (minYear == null || maxYear == null) {
+            log.warn("未找到数据，使用默认年份范围 2000-2023");
+            minYear = 2000;
+            maxYear = 2023;
+        } else {
+            log.info("检测到数据年份范围: {} - {}", minYear, maxYear);
         }
-        log.info("所有年份风险计算完成");
+        
+        int totalYears = maxYear - minYear + 1;
+        int successYears = 0;
+        int failedYears = 0;
+        
+        for (int year = minYear; year <= maxYear; year++) {
+            try {
+                log.info("正在计算第 {}/{} 年: {}", (year - minYear + 1), totalYears, year);
+                calculateAll(year);
+                successYears++;
+                log.info("✓ {} 年计算完成", year);
+            } catch (Exception e) {
+                failedYears++;
+                log.error("✗ {} 年计算失败: {}", year, e.getMessage());
+                // 继续计算下一年，不中断
+            }
+        }
+        
+        log.info("所有年份风险计算完成: 成功 {}/{}, 失败 {}", successYears, totalYears, failedYears);
+    }
+
+    /**
+     * 从数据表中获取最小年份
+     */
+    private Integer getMinYearFromData() {
+        try {
+            return riskAssessmentMapper.getMinDataYear();
+        } catch (Exception e) {
+            log.warn("获取最小年份失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 从数据表中获取最大年份
+     */
+    private Integer getMaxYearFromData() {
+        try {
+            Integer dbMaxYear = riskAssessmentMapper.getMaxDataYear();
+            int currentYear = java.time.LocalDate.now().getYear();
+            // 返回数据库最大年份和当前年份的较大值
+            return dbMaxYear != null ? Math.max(dbMaxYear, currentYear) : currentYear;
+        } catch (Exception e) {
+            log.warn("获取最大年份失败: {}", e.getMessage());
+            return null;
+        }
     }
 
     @Override

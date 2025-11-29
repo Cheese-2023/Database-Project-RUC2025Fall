@@ -2,6 +2,8 @@
 -- 县域风险预警与可视化决策系统数据库脚本
 -- ========================================
 
+SET NAMES utf8mb4;
+
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS county_risk_warning_system 
 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

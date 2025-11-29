@@ -12,7 +12,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/county_risk_warning_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 1285936938m
+    password: 123456
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -46,7 +46,8 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 关闭SQL日志输出到控制台，避免日志中出现SQL运算结果
+    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       id-type: auto
@@ -74,7 +75,16 @@ jwt:
 # 日志配置
 logging:
   level:
-    com.county.risk: debug
-    com.baomidou.mybatisplus: info
+    com.county.risk: info
+    com.baomidou.mybatisplus: warn
+    org.springframework: warn
+    org.apache.ibatis: warn
+    java.sql: warn
+    javax.sql: warn
+  file:
+    name: logs/application.log
+    max-size: 100MB
+    max-history: 30
   pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
     console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n'
