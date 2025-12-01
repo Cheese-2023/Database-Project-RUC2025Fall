@@ -25,10 +25,34 @@
           class="header-menu"
         >
           <el-menu-item index="dashboard">风险监控大屏</el-menu-item>
-          <el-menu-item index="risk-analysis">风险分析</el-menu-item>
-          <el-menu-item index="alert-manage">预警管理</el-menu-item>
-          <el-menu-item index="data-manage">数据管理</el-menu-item>
+          <el-menu-item 
+            v-if="userRole === 'ADMIN'" 
+            index="risk-analysis"
+          >
+            风险分析
+          </el-menu-item>
+          <el-menu-item 
+            v-if="userRole === 'ADMIN'" 
+            index="alert-manage"
+          >
+            预警管理
+          </el-menu-item>
+          <el-menu-item 
+            v-if="userRole === 'ADMIN'" 
+            index="data-manage"
+          >
+            数据管理
+          </el-menu-item>
         </el-menu>
+      </div>
+      <div class="header-actions">
+        <div class="user-info">
+          <span class="user-name">{{ username || '访客' }}</span>
+          <el-tag size="small" effect="dark" type="info">{{ userRole || '未登录' }}</el-tag>
+        </div>
+        <el-button type="primary" size="small" @click="handleLogout">
+          退出登录
+        </el-button>
       </div>
     </el-header>
     
@@ -44,12 +68,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
+
+// 当前用户角色
+const userRole = computed(() => {
+  return localStorage.getItem('userRole') || ''
+})
+
+const username = computed(() => {
+  return localStorage.getItem('username') || ''
+})
 
 // 需要缓存的视图（避免重复加载数据）
 const cachedViews = ['Dashboard', 'RiskAnalysis', 'AlertManage', 'DataManage']
@@ -77,6 +110,13 @@ const handleMenuSelect = (index: string) => {
 // 返回按钮处理
 const handleBack = () => {
   router.push('/dashboard')
+}
+
+const handleLogout = () => {
+  localStorage.removeItem('isLoggedIn')
+  localStorage.removeItem('userRole')
+  localStorage.removeItem('username')
+  router.push('/login')
 }
 </script>
 
@@ -141,6 +181,24 @@ const handleBack = () => {
   flex: 1;
   display: flex;
   justify-content: flex-end;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  
+  .user-name {
+    font-weight: 500;
+  }
 }
 
 .header-menu {

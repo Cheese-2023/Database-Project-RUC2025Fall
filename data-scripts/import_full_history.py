@@ -34,7 +34,7 @@ import time
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': '123456',
+    'password': '20050210Wbz',
     'database': 'county_risk_warning_system',
     'charset': 'utf8mb4'
 }
