@@ -43,6 +43,12 @@
           >
             数据管理
           </el-menu-item>
+          <el-menu-item index="poverty-achievement">
+            成果展示
+          </el-menu-item>
+          <el-menu-item index="deepseek-chat">
+            AI助手
+          </el-menu-item>
         </el-menu>
       </div>
       <div class="header-actions">
@@ -85,7 +91,7 @@ const username = computed(() => {
 })
 
 // 需要缓存的视图（避免重复加载数据）
-const cachedViews = ['Dashboard', 'RiskAnalysis', 'AlertManage', 'DataManage']
+const cachedViews = ['Dashboard', 'RiskAnalysis', 'AlertManage', 'DataManage', 'PovertyAchievement', 'DeepSeekChat']
 
 // 当前激活的菜单
 const activeMenu = computed(() => {
@@ -94,6 +100,8 @@ const activeMenu = computed(() => {
   if (name === 'RiskAnalysis') return 'risk-analysis'
   if (name === 'AlertManage') return 'alert-manage'
   if (name === 'DataManage') return 'data-manage'
+  if (name === 'PovertyAchievement') return 'poverty-achievement'
+  if (name === 'DeepSeekChat') return 'deepseek-chat'
   return 'dashboard'
 })
 

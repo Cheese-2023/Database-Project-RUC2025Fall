@@ -36,6 +36,18 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/DataManage.vue'),
     meta: { title: '数据管理', requiresAuth: true, roles: ['ADMIN'] }
   },
+  {
+    path: '/poverty-achievement',
+    name: 'PovertyAchievement',
+    component: () => import('@/views/PovertyAchievement.vue'),
+    meta: { title: '成果展示', requiresAuth: true }
+  },
+  {
+    path: '/deepseek-chat',
+    name: 'DeepSeekChat',
+    component: () => import('@/views/DeepSeekChat.vue'),
+    meta: { title: 'AI助手', requiresAuth: true }
+  },
 
 ]
 

@@ -6,6 +6,9 @@ server:
 spring:
   application:
     name: county-risk-warning-system
+  # 自动加载本地配置文件（如果存在）
+  config:
+    import: optional:file:./application-local.yml
   
   # 数据源配置
   datasource:
@@ -71,6 +74,24 @@ knife4j:
 jwt:
   secret: county-risk-warning-system-secret-key-2025
   expiration: 86400000 # 24小时
+
+# DeepSeek API 配置
+# 方式1：使用环境变量（推荐）
+#   设置环境变量：export DEEPSEEK_API_KEY=sk-your-api-key
+# 方式2：使用本地配置文件（开发环境）
+#   复制 application-local.yml.example 为 application-local.yml 并填入 API Key
+# 方式3：直接在此文件中配置（不推荐，会提交到 Git）
+deepseek:
+  api:
+    # 优先使用环境变量 DEEPSEEK_API_KEY，如果没有则使用默认值
+    # 注意：如果创建了 application-local.yml，其中的配置会覆盖此默认值
+    key: ${DEEPSEEK_API_KEY:sk-f77be76ff1594013bd626524f3fb2fa2}
+    # API 端点（通常不需要修改）
+    url: https://api.deepseek.com/v1/chat/completions
+    # 默认模型名称
+    model: deepseek-chat
+    # 最大生成token数
+    max-tokens: 2000
 
 # 日志配置
 logging:
