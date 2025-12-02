@@ -26,27 +26,39 @@
         >
           <el-menu-item index="dashboard">风险监控大屏</el-menu-item>
           <el-menu-item 
-            v-if="userRole === 'ADMIN'" 
+            v-if="canAccessRiskAnalysis(userRole)" 
             index="risk-analysis"
           >
             风险分析
           </el-menu-item>
           <el-menu-item 
-            v-if="userRole === 'ADMIN'" 
+            v-if="canAccessAlertManage(userRole)" 
             index="alert-manage"
           >
             预警管理
           </el-menu-item>
           <el-menu-item 
-            v-if="userRole === 'ADMIN'" 
+            v-if="canAccessDataManage(userRole)" 
             index="data-manage"
           >
             数据管理
           </el-menu-item>
-          <el-menu-item index="poverty-achievement">
+          <el-menu-item 
+            v-if="canExecuteSQL(userRole)" 
+            index="sql-execute"
+          >
+            SQL操作
+          </el-menu-item>
+          <el-menu-item 
+            v-if="canAccessPovertyAchievement(userRole)" 
+            index="poverty-achievement"
+          >
             成果展示
           </el-menu-item>
-          <el-menu-item index="deepseek-chat">
+          <el-menu-item 
+            v-if="canUseAI(userRole)" 
+            index="deepseek-chat"
+          >
             AI助手
           </el-menu-item>
         </el-menu>
@@ -77,6 +89,14 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
+import {
+  canAccessRiskAnalysis,
+  canAccessAlertManage,
+  canAccessDataManage,
+  canAccessPovertyAchievement,
+  canUseAI,
+  canExecuteSQL
+} from '../utils/permission'
 
 const router = useRouter()
 const route = useRoute()
@@ -91,7 +111,7 @@ const username = computed(() => {
 })
 
 // 需要缓存的视图（避免重复加载数据）
-const cachedViews = ['Dashboard', 'RiskAnalysis', 'AlertManage', 'DataManage', 'PovertyAchievement', 'DeepSeekChat']
+const cachedViews = ['Dashboard', 'RiskAnalysis', 'AlertManage', 'DataManage', 'SqlExecute', 'PovertyAchievement', 'DeepSeekChat']
 
 // 当前激活的菜单
 const activeMenu = computed(() => {
@@ -100,6 +120,7 @@ const activeMenu = computed(() => {
   if (name === 'RiskAnalysis') return 'risk-analysis'
   if (name === 'AlertManage') return 'alert-manage'
   if (name === 'DataManage') return 'data-manage'
+  if (name === 'SqlExecute') return 'sql-execute'
   if (name === 'PovertyAchievement') return 'poverty-achievement'
   if (name === 'DeepSeekChat') return 'deepseek-chat'
   return 'dashboard'

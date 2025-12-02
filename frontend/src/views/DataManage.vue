@@ -5,8 +5,22 @@
         <div class="card-header">
           <span>风险计算配置</span>
           <div>
-            <el-button type="success" @click="handleRecalculate" :loading="calculating">立即重新计算风险</el-button>
-            <el-button type="primary" @click="handleRestoreDefaults">恢复默认配置</el-button>
+            <el-button 
+              v-if="canAdjust"
+              type="success" 
+              @click="handleRecalculate" 
+              :loading="calculating"
+            >
+              立即重新计算风险
+            </el-button>
+            <el-button 
+              v-if="canAdjust"
+              type="primary" 
+              @click="handleRestoreDefaults"
+            >
+              恢复默认配置
+            </el-button>
+            <el-tag v-else type="warning">您没有权限调整风险参数</el-tag>
           </div>
         </div>
       </template>
@@ -64,6 +78,7 @@
                   :max="1" 
                   :min="0" 
                   size="small"
+                  :disabled="!canAdjust"
                   @change="handleUpdateIndicator(scope.row)"
                 />
               </template>
@@ -80,7 +95,8 @@
                     :precision="2" 
                     :step="0.1" 
                     size="small" 
-                    placeholder="高" 
+                    placeholder="高"
+                    :disabled="!canAdjust"
                     @change="handleUpdateIndicator(scope.row)" 
                   />
                   <span class="separator">/</span>
@@ -90,7 +106,8 @@
                     :precision="2" 
                     :step="0.1" 
                     size="small" 
-                    placeholder="中" 
+                    placeholder="中"
+                    :disabled="!canAdjust"
                     @change="handleUpdateIndicator(scope.row)" 
                   />
                   <span class="separator">/</span>
@@ -100,7 +117,8 @@
                     :precision="2" 
                     :step="0.1" 
                     size="small" 
-                    placeholder="低" 
+                    placeholder="低"
+                    :disabled="!canAdjust"
                     @change="handleUpdateIndicator(scope.row)" 
                   />
                 </div>
@@ -117,15 +135,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getGroupedIndicators, updateIndicator, calculateRisk, restoreDefaults } from '../api/risk'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { QuestionFilled } from '@element-plus/icons-vue'
+import { canAdjustRiskParams } from '../utils/permission'
 
 const loading = ref(false)
 const calculating = ref(false)
 const refreshKey = ref(0)
 const groupedIndicators = ref<Record<string, any[]>>({})
+
+// 当前用户角色
+const userRole = computed(() => localStorage.getItem('userRole') || '')
+// 是否可以调整风险参数
+const canAdjust = computed(() => canAdjustRiskParams(userRole.value))
 
 const loadIndicators = async () => {
   loading.value = true

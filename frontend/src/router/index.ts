@@ -22,31 +22,37 @@ const routes: RouteRecordRaw[] = [
     path: '/risk-analysis',
     name: 'RiskAnalysis',
     component: () => import('@/views/RiskAnalysis.vue'),
-    meta: { title: '风险分析', requiresAuth: true, roles: ['ADMIN'] }
+    meta: { title: '风险分析', requiresAuth: true, roles: ['ADMIN', 'RISK_ANALYST', 'DATA_MAINTAINER'] }
   },
   {
     path: '/alert-manage',
     name: 'AlertManage',
     component: () => import('@/views/AlertManage.vue'),
-    meta: { title: '预警管理', requiresAuth: true, roles: ['ADMIN'] }
+    meta: { title: '预警管理', requiresAuth: true, roles: ['ADMIN', 'RISK_ANALYST', 'DATA_MAINTAINER'] }
   },
   {
     path: '/data-manage',
     name: 'DataManage',
     component: () => import('@/views/DataManage.vue'),
-    meta: { title: '数据管理', requiresAuth: true, roles: ['ADMIN'] }
+    meta: { title: '数据管理', requiresAuth: true, roles: ['ADMIN', 'RISK_ANALYST', 'DATA_MAINTAINER'] }
+  },
+  {
+    path: '/sql-execute',
+    name: 'SqlExecute',
+    component: () => import('@/views/SqlExecute.vue'),
+    meta: { title: 'SQL操作', requiresAuth: true, roles: ['ADMIN', 'RISK_ANALYST', 'DATA_MAINTAINER'] }
   },
   {
     path: '/poverty-achievement',
     name: 'PovertyAchievement',
     component: () => import('@/views/PovertyAchievement.vue'),
-    meta: { title: '成果展示', requiresAuth: true }
+    meta: { title: '成果展示', requiresAuth: true, roles: ['ADMIN', 'RISK_ANALYST', 'DATA_MAINTAINER'] }
   },
   {
     path: '/deepseek-chat',
     name: 'DeepSeekChat',
     component: () => import('@/views/DeepSeekChat.vue'),
-    meta: { title: 'AI助手', requiresAuth: true }
+    meta: { title: 'AI助手', requiresAuth: true, roles: ['ADMIN', 'VIP', 'RISK_ANALYST', 'DATA_MAINTAINER'] }
   },
 
 ]

@@ -2,6 +2,7 @@ package com.county.risk.controller;
 
 import com.county.risk.common.Result;
 import com.county.risk.service.DeepSeekService;
+import com.county.risk.util.RolePermissionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,15 @@ public class DeepSeekController {
      */
     @Operation(summary = "发送聊天消息", description = "向 DeepSeek API 发送消息并获取回复")
     @PostMapping("/chat")
-    public Result<Map<String, Object>> chat(@RequestBody Map<String, Object> request) {
+    public Result<Map<String, Object>> chat(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "role", required = false) String role) {
+        
+        // 权限检查
+        if (!RolePermissionUtil.canUseAI(role)) {
+            return Result.error(403, "您没有权限使用AI助手功能");
+        }
+        
         Map<String, Object> response = deepSeekService.chat(request);
         
         // 检查是否有错误
@@ -43,7 +52,15 @@ public class DeepSeekController {
      */
     @Operation(summary = "简化聊天接口", description = "发送用户消息，自动构建对话上下文")
     @PostMapping("/chat/simple")
-    public Result<Map<String, Object>> simpleChat(@RequestBody Map<String, Object> request) {
+    public Result<Map<String, Object>> simpleChat(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "role", required = false) String role) {
+        
+        // 权限检查
+        if (!RolePermissionUtil.canUseAI(role)) {
+            return Result.error(403, "您没有权限使用AI助手功能");
+        }
+        
         String userMessage = (String) request.get("message");
         if (userMessage == null || userMessage.trim().isEmpty()) {
             return Result.error(400, "消息内容不能为空");

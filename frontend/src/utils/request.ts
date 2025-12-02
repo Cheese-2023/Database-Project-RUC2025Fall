@@ -18,6 +18,11 @@ service.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    // 添加用户角色到请求头
+    const role = localStorage.getItem('userRole')
+    if (role) {
+      config.headers.role = role
+    }
     return config
   },
   (error) => {
