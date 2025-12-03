@@ -110,13 +110,15 @@ public class SqlExecuteServiceImpl implements SqlExecuteService {
     public List<String> getTableList() {
         try {
             List<String> tables = new ArrayList<>();
-            DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
-            ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-            while (rs.next()) {
-                String tableName = rs.getString("TABLE_NAME");
-                tables.add(tableName);
+            try (java.sql.Connection connection = dataSource.getConnection()) {
+                DatabaseMetaData metaData = connection.getMetaData();
+                try (ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
+                    while (rs.next()) {
+                        String tableName = rs.getString("TABLE_NAME");
+                        tables.add(tableName);
+                    }
+                }
             }
-            rs.close();
             return tables;
         } catch (Exception e) {
             log.error("获取表列表失败: {}", e.getMessage(), e);
@@ -128,18 +130,20 @@ public class SqlExecuteServiceImpl implements SqlExecuteService {
     public List<Map<String, Object>> getTableStructure(String tableName) {
         try {
             List<Map<String, Object>> columns = new ArrayList<>();
-            DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
-            ResultSet rs = metaData.getColumns(null, null, tableName, null);
-            while (rs.next()) {
-                Map<String, Object> column = new HashMap<>();
-                column.put("columnName", rs.getString("COLUMN_NAME"));
-                column.put("dataType", rs.getString("TYPE_NAME"));
-                column.put("columnSize", rs.getInt("COLUMN_SIZE"));
-                column.put("nullable", rs.getInt("NULLABLE") == 1);
-                column.put("remarks", rs.getString("REMARKS"));
-                columns.add(column);
+            try (java.sql.Connection connection = dataSource.getConnection()) {
+                DatabaseMetaData metaData = connection.getMetaData();
+                try (ResultSet rs = metaData.getColumns(null, null, tableName, null)) {
+                    while (rs.next()) {
+                        Map<String, Object> column = new HashMap<>();
+                        column.put("columnName", rs.getString("COLUMN_NAME"));
+                        column.put("dataType", rs.getString("TYPE_NAME"));
+                        column.put("columnSize", rs.getInt("COLUMN_SIZE"));
+                        column.put("nullable", rs.getInt("NULLABLE") == 1);
+                        column.put("remarks", rs.getString("REMARKS"));
+                        columns.add(column);
+                    }
+                }
             }
-            rs.close();
             return columns;
         } catch (Exception e) {
             log.error("获取表结构失败: {}", e.getMessage(), e);

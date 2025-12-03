@@ -6,16 +6,12 @@ import request from '../utils/request';
 
 // 执行查询SQL
 export const executeQuery = (sql: string) => {
-  return request.post('/sql/query', null, {
-    params: { sql }
-  });
+  return request.post(`/sql/query?sql=${encodeURIComponent(sql)}`);
 };
 
 // 执行更新SQL
 export const executeUpdate = (sql: string) => {
-  return request.post('/sql/update', null, {
-    params: { sql }
-  });
+  return request.post(`/sql/update?sql=${encodeURIComponent(sql)}`);
 };
 
 // 获取数据库表列表

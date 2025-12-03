@@ -44,7 +44,7 @@ DB_CONFIG = {
 # ==========================================
 # 扰动强度：0.0-1.0，0.0表示无扰动，1.0表示最大扰动
 # 建议值：0.05 (5%扰动) 到 0.20 (20%扰动)
-DATA_PERTURBATION_RATE = 0.30  # 默认10%扰动，可根据需要修改
+DATA_PERTURBATION_RATE = 0.50  # 默认10%扰动，可根据需要修改
 
 def apply_perturbation(value, rnd, perturbation_rate=DATA_PERTURBATION_RATE):
     """
